@@ -2,8 +2,13 @@ import { Admin, Prisma, UserStatus } from "@prisma/client";
 import { adminSearchAbleFields } from "./admin.constant";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import prisma from "../../../shared/prisma";
+import { IAdminFilterRequest } from "./admin.interface";
+import { IPaginationOptions } from "../../interfaces/pagination";
 
-const getAllFromDB = async (params: any, options: any) => {
+const getAllFromDB = async (
+  params: IAdminFilterRequest,
+  options: IPaginationOptions
+) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = params;
 
@@ -29,7 +34,7 @@ const getAllFromDB = async (params: any, options: any) => {
     });
   }
   andConditions.push({
-    isDeleted: true,
+    isDeleted: false,
   });
   const whereConditions: Prisma.AdminWhereInput = { AND: andConditions };
 
@@ -76,6 +81,7 @@ const updateIntoDB = async (
   id: string,
   data: Partial<Admin>
 ): Promise<Admin> => {
+  console.log("checker");
   await prisma.admin.findUniqueOrThrow({
     where: {
       id,

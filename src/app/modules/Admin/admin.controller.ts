@@ -7,12 +7,15 @@ import pick from "../../../shared/pick";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 
-const getAllFromDB = async (req: Request, res: Response) => {
-  try {
+//get all controller
+const getAllFromDB: RequestHandler = catchAsync(
+  async (req: Request, res: Response) => {
+    // console.log(req.query)
     const filters = pick(req.query, adminFilterableFields);
     const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-
+    console.log(options);
     const result = await AdminService.getAllFromDB(filters, options);
+
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -20,14 +23,10 @@ const getAllFromDB = async (req: Request, res: Response) => {
       meta: result.meta,
       data: result.data,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err || "Something went wrong !",
-    });
   }
-};
+);
 
+//get by ID controller
 const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -39,45 +38,34 @@ const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
 //update controller
 const updateIntoDB = catchAsync(async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const result = await AdminService.updateIntoDB(id, req.body);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Admin data updated!",
-      data: result,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err || "data can not updated !",
-    });
-  }
+  const { id } = req.params;
+
+  const result = await AdminService.updateIntoDB(id, req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Admin data updated!",
+    data: result,
+  });
 });
 
-//delete admin
+//delete controller
 const deleteFromDB = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  try {
-    const result = await AdminService.deleteFromDB(id);
-    console.log("delete control", result);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Admin data deleted!",
-      data: result,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err || "Something went Wrong !",
-    });
-  }
+
+  const result = await AdminService.deleteFromDB(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Admin data deleted!",
+    data: result,
+  });
 });
 
+//soft delete controller
 const softDeleteFromDB = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
