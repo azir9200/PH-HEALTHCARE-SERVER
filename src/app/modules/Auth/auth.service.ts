@@ -49,9 +49,13 @@ const loginUser = async (payload: { email: string; password: string }) => {
 //refresh token api
 const refreshToken = async (token: string) => {
   let decodedData: JwtPayload;
-
+  console.log("cookie paichi", token);
   try {
-    decodedData = jwtHelpers.verifyToken(token, "abcdefghijkl");
+    decodedData = jwtHelpers.verifyToken(
+      token,
+      config.jwt.refresh_token_secret as string
+    );
+    
   } catch (err) {
     throw new Error("You are not Authorized!");
   }

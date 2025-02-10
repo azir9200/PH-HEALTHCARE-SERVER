@@ -50,6 +50,7 @@ const bcrypt = __importStar(require("bcrypt"));
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const jwtHelpers_1 = require("../../../helpers/jwtHelpers");
 const client_1 = require("@prisma/client");
+const config_1 = __importDefault(require("../../../config"));
 const loginUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     // console.log("user login => auth service", payload);
     const userData = yield prisma_1.default.user.findUniqueOrThrow({
@@ -65,12 +66,12 @@ const loginUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const accessToken = jwtHelpers_1.jwtHelpers.generateToken({
         email: userData.email,
         role: userData.role,
-    }, "abcdefgh", "60m");
+    }, config_1.default.jwt.jwt_secret, config_1.default.jwt.expires_in);
     // Generate refresh token
     const refreshToken = jwtHelpers_1.jwtHelpers.generateToken({
         email: userData.email,
         role: userData.role,
-    }, "abcdefghijkl", "100m");
+    }, config_1.default.jwt.jwt_secret, config_1.default.jwt.expires_in);
     return {
         accessToken,
         needPasswordChange: userData.needPasswordChange,
@@ -81,7 +82,7 @@ const loginUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
 const refreshToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
     let decodedData;
     try {
-        decodedData = jwtHelpers_1.jwtHelpers.verifyToken(token, "abcdefghijkl");
+        decodedData = jwtHelpers_1.jwtHelpers.verifyToken(token, config_1.default.jwt.refresh_token_secret);
     }
     catch (err) {
         throw new Error("You are not Authorized!");
@@ -101,7 +102,7 @@ const refreshToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
     const accessToken = jwtHelpers_1.jwtHelpers.generateToken({
         email: decodedData.email,
         role: decodedData.role,
-    }, "abcdefgh", "60m");
+    }, config_1.default.jwt.jwt_secret, config_1.default.jwt.expires_in);
     return {
         accessToken,
         needPasswordChange: decodedData.needPasswordChange,

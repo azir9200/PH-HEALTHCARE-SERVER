@@ -13,12 +13,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
+const config_1 = __importDefault(require("./config"));
 const port = 3000;
 // Start the server
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        app_1.default.listen(port, () => {
-            console.log(`✅ Server is running on http://localhost:${port}`);
+        const server = app_1.default.listen(config_1.default.port, () => {
+            console.log(`✅ Server is running on http://localhost:${config_1.default.port}`);
         });
     });
 }
