@@ -4,6 +4,7 @@ import prisma from "../../../shared/prisma";
 import { jwtHelpers } from "../../../helpers/jwtHelpers";
 import { UserStatus } from "@prisma/client";
 import config from "../../../config";
+import emailSender from "./emailSender";
 
 const loginUser = async (payload: { email: string; password: string }) => {
   // console.log("user login => auth service", payload);
@@ -55,7 +56,6 @@ const refreshToken = async (token: string) => {
       token,
       config.jwt.refresh_token_secret as string
     );
-    
   } catch (err) {
     throw new Error("You are not Authorized!");
   }
@@ -86,8 +86,72 @@ const refreshToken = async (token: string) => {
     needPasswordChange: decodedData.needPasswordChange,
   };
 };
+//password change
+const changePassword = async (user: any, payload: any) => {
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user.email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+  const isCorrectPassword: boolean = await bcrypt.compare(
+    payload.oldPassword,
+    userData.password
+  );
+
+  if (!isCorrectPassword) {
+    throw new Error("Password incorrect!");
+  }
+  const hashedPassword: string = await bcrypt.hash(payload.newPassword, 12);
+  await prisma.user.update({
+    where: {
+      email: userData.email,
+    },
+    data: {
+      password: hashedPassword,
+      needPasswordChange: false,
+    },
+  });
+};
+const forgotPassword = async (payload: { email: string }) => {
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: payload.email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+  const resetPassToken = jwtHelpers.generateToken(
+    { email: userData.email, role: userData.role },
+    config.jwt.reset_pass_secret as Secret,
+    config.jwt.reset_pass_token_expires_in as string
+  );
+  const resetPassLink =
+    config.reset_password_link +
+    `?userId=${userData.id}&token=${resetPassToken}`;
+  console.log("LINK", resetPassLink);
+
+  const sender: any = await emailSender(
+    userData.email,
+    `
+      <div>
+          <p>Dear User,</p>
+          <p>Your password reset link 
+              <a href=${resetPassLink}>
+                  <button>
+                      Reset Password
+                  </button>
+              </a>
+          </p>
+
+      </div>
+      `
+  );
+  console.log("SENDER", sender);
+};
 
 export const AuthServices = {
   loginUser,
   refreshToken,
+  changePassword,
+  forgotPassword,
 };
