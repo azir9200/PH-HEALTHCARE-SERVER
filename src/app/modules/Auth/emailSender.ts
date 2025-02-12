@@ -16,14 +16,14 @@ const emailSender = async (email: string, html: string) => {
   });
 
   const info = await transporter.sendMail({
-    from: '"PH Health Care" <aziruddin83@gmail.com>', // sender address
+    from: '"PH Health Care" <aziruddin83@gmail.com>',
     to: email, // list of receivers
     subject: "Reset Password Link", // Subject line
     //text: "Hello world?", // plain text body
     html, // html body
   });
 
-  //console.log("Message sent: %s", info.messageId);
+  console.log("Message sent: %s", info.messageId);
 };
 
 export default emailSender;

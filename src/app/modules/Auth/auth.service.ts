@@ -50,7 +50,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
 //refresh token api
 const refreshToken = async (token: string) => {
   let decodedData: JwtPayload;
-  console.log("cookie paichi", token);
+  
   try {
     decodedData = jwtHelpers.verifyToken(
       token,
@@ -128,9 +128,8 @@ const forgotPassword = async (payload: { email: string }) => {
   const resetPassLink =
     config.reset_password_link +
     `?userId=${userData.id}&token=${resetPassToken}`;
-  console.log("LINK", resetPassLink);
 
-  const sender: any = await emailSender(
+  await emailSender(
     userData.email,
     `
       <div>
@@ -146,7 +145,35 @@ const forgotPassword = async (payload: { email: string }) => {
       </div>
       `
   );
-  console.log("SENDER", sender);
+  // console.log("SENDER");
+};
+const resetPassword = async (
+  token: string,
+  payload: { id: string; password: string }
+) => {
+  console.log({ token, payload });
+  const userData = await prisma.user.findFirstOrThrow({
+    where: {
+      id: payload.id,
+      status: UserStatus.ACTIVE,
+    },
+  });
+  const isValidToken = jwtHelpers.verifyToken(
+    token,
+    config.jwt.reset_pass_secret as string
+  );
+
+  // hash password
+  const password = await bcrypt.hash(payload.password, 12);
+  // update into database
+  await prisma.user.update({
+    where: {
+      id: payload.id,
+    },
+    data: {
+      password,
+    },
+  });
 };
 
 export const AuthServices = {
@@ -154,4 +181,5 @@ export const AuthServices = {
   refreshToken,
   changePassword,
   forgotPassword,
+  resetPassword,
 };
