@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { request, Request, Response } from "express";
 import { userService } from "./user.service";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
@@ -82,6 +82,19 @@ const getMyProfile = catchAsync(
     });
   }
 );
+const updateMyProfile = catchAsync(
+  async (req: Request & { user?: IAuthUser }, res: Response) => {
+    const user = req.user;
+    const result = await userService.updateMyProfile(user as IAuthUser, req);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "My profile data updated!",
+      data: result,
+    });
+  }
+);
 
 export const userController = {
   createAdmin,
@@ -90,4 +103,5 @@ export const userController = {
   getAllFromDB,
   changeProfileStatus,
   getMyProfile,
+  updateMyProfile,
 };

@@ -50,7 +50,7 @@ const loginUser = async (payload: { email: string; password: string }) => {
 //refresh token api
 const refreshToken = async (token: string) => {
   let decodedData: JwtPayload;
-  
+
   try {
     decodedData = jwtHelpers.verifyToken(
       token,

@@ -9,10 +9,10 @@ import validateRequest from "../../middlewares/validateRequest";
 const router = express.Router();
 
 router.get(
-  '/me',
+  "/me",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DOCTOR, UserRole.PATIENT),
   userController.getMyProfile
-)
+);
 
 router.post(
   "/create-admin",
@@ -52,5 +52,13 @@ router.patch(
   validateRequest(userValidation.updateStatus),
   userController.changeProfileStatus
 );
-
+router.patch(
+  "/update-my-profile",
+  auth(UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  fileUploader.upload.single("file"),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    return userController.updateMyProfile(req, res, next);
+  }
+);
 export const userRoutes = router;

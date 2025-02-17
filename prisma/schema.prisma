@@ -59,7 +59,7 @@ model Doctor {
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
   user                User                @relation(fields: [email], references: [email])
-  // doctorSpecialties   DoctorSpecialties[]
+ doctorSpecialties   DoctorSpecialties[]
   // doctorSchedules     DoctorSchedules[]
   // appointment         Appointment[]
   // prescription        Prescription[]
@@ -87,7 +87,26 @@ model Patient {
 
   @@map("patients")
 }
+//model Specialties
+model Specialties {
+  id                String              @id @default(uuid())
+  title             String
+  icon              String
+  doctorSpecialties DoctorSpecialties[]
 
+  @@map("specialties")
+}
+// doctor specialties
+model DoctorSpecialties {
+  specialtiesId String
+  specialties   Specialties @relation(fields: [specialtiesId], references: [id])
+
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id])
+
+  @@id([specialtiesId, doctorId])
+  @@map("doctor_specialties")
+}
 enum UserRole {
   SUPER_ADMIN
   ADMIN
