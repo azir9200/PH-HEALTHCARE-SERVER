@@ -1,7 +1,7 @@
 import { Doctor, Prisma } from "@prisma/client";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { IPaginationOptions } from "../../interfaces/pagination";
-import { IDoctorFilterRequest } from "./doctor.interface";
+import { IDoctorFilterRequest, IDoctorUpdate } from "./doctor.interface";
 import { doctorSearchableFields } from "./doctor.constants";
 import prisma from "../../../shared/prisma";
 
@@ -111,8 +111,44 @@ const getByIdFromDB = async (id: string): Promise<Doctor | null> => {
   });
   return result;
 };
+//update doctor
+const updateIntoDB = async (id: string, payload: any) => {
+  const { specialties, ...doctorData } = payload;
 
+  const doctorInfo = await prisma.doctor.findUniqueOrThrow({
+    where: {
+      id,
+    },
+  });
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const updatedDoctorData = await transactionClient.doctor.update({
+      where: {
+        id,
+      },
+      data: doctorData,
+      include: {
+        doctorSpecialties: true,
+      },
+    });
+
+    // const createSpecialtiesIds = specialties.filter();
+    for (const specialtiesId of specialties) {
+      const createdDoctorSpecialties =
+        await transactionClient.doctorSpecialties.create({
+          data: {
+            doctorId: doctorInfo.id,
+            specialtiesId: specialtiesId,
+          },
+        });
+    }
+    return updatedDoctorData;
+  });
+
+  return result;
+};
 export const DoctorService = {
   getAllFromDB,
   getByIdFromDB,
+  updateIntoDB,
 };
