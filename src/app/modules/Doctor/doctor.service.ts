@@ -1,4 +1,4 @@
-import { Doctor, Prisma } from "@prisma/client";
+import { Doctor, Prisma, UserStatus } from "@prisma/client";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { IPaginationOptions } from "../../interfaces/pagination";
 import { IDoctorFilterRequest, IDoctorUpdate } from "./doctor.interface";
@@ -10,8 +10,8 @@ const getAllFromDB = async (
   options: IPaginationOptions
 ) => {
   const { limit, page, skip } = paginationHelper.calculatePagination(options);
-  const { searchTerm, specialties, ...filterData } = filters;
-
+  const { searchTerm, specialties, gender, ...filterData } = filters;
+  console.log("object=>", specialties, gender);
   const andConditions: Prisma.DoctorWhereInput[] = [];
 
   if (searchTerm) {
@@ -112,7 +112,7 @@ const getByIdFromDB = async (id: string): Promise<Doctor | null> => {
   return result;
 };
 //update doctor
-const updateIntoDB = async (id: string, payload: any) => {
+const updateIntoDB = async (id: string, payload: IDoctorUpdate) => {
   const { specialties, ...doctorData } = payload;
 
   const doctorInfo = await prisma.doctor.findUniqueOrThrow({
@@ -121,34 +121,123 @@ const updateIntoDB = async (id: string, payload: any) => {
     },
   });
 
-  const result = await prisma.$transaction(async (transactionClient) => {
+  await prisma.$transaction(async (transactionClient) => {
     const updatedDoctorData = await transactionClient.doctor.update({
       where: {
         id,
       },
       data: doctorData,
-      include: {
-        doctorSpecialties: true,
-      },
     });
 
-    // const createSpecialtiesIds = specialties.filter();
-    for (const specialtiesId of specialties) {
-      const createdDoctorSpecialties =
+    if (specialties && specialties.length > 0) {
+      const deleteSpecialtiesIds = specialties.filter(
+        (specialty) => specialty.isDeleted
+      );
+      //console.log(deleteSpecialtiesIds)
+      for (const specialty of deleteSpecialtiesIds) {
+        await transactionClient.doctorSpecialties.deleteMany({
+          where: {
+            doctorId: doctorInfo.id,
+            specialtiesId: specialty.specialtiesId,
+          },
+        });
+      }
+      // create specialties
+      const createSpecialtiesIds = specialties.filter(
+        (specialty) => !specialty.isDeleted
+      );
+      console.log(createSpecialtiesIds);
+      for (const specialty of createSpecialtiesIds) {
         await transactionClient.doctorSpecialties.create({
           data: {
             doctorId: doctorInfo.id,
-            specialtiesId: specialtiesId,
+            specialtiesId: specialty.specialtiesId,
           },
         });
+      }
     }
-    return updatedDoctorData;
+  });
+  const result = await prisma.doctor.findUnique({
+    where: {
+      id: doctorInfo.id,
+    },
+    include: {
+      doctorSpecialties: {
+        include: {
+          specialties: true,
+        },
+      },
+    },
+  });
+  return result;
+};
+
+//delete Service
+const deleteFromDB = async (id: string): Promise<Doctor | null> => {
+  await prisma.doctor.findUniqueOrThrow({
+    where: {
+      id,
+    },
+  });
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const doctorDeletedData = await transactionClient.doctor.delete({
+      where: {
+        id,
+      },
+    });
+
+    await transactionClient.user.delete({
+      where: {
+        email: doctorDeletedData.email,
+      },
+    });
+
+    return doctorDeletedData;
   });
 
   return result;
 };
+
+// //Soft Delete
+const softDeleteFromDB = async (id: string): Promise<Doctor | null> => {
+  await prisma.doctor.findUniqueOrThrow({
+    where: {
+      id,
+      isDeleted: false,
+    },
+  });
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const doctorDeletedData = await transactionClient.doctor.update({
+      where: {
+        id,
+      },
+      data: {
+        isDeleted: true,
+        // name: "MashaALLAH",
+      },
+    });
+
+    await transactionClient.user.update({
+      where: {
+        email: doctorDeletedData.email,
+      },
+      data: {
+        status: UserStatus.DELETED,
+      },
+    });
+
+    return doctorDeletedData;
+  });
+
+  return result;
+};
+
 export const DoctorService = {
   getAllFromDB,
   getByIdFromDB,
   updateIntoDB,
+  deleteFromDB,
+  softDeleteFromDB,
 };
