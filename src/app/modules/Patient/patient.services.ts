@@ -113,7 +113,7 @@ const updateIntoDB = async (
     });
     // create or update patient health data
     if (patientHealthData) {
-      const healthData = await transactionClient.patientHealthData.upsert({
+       await transactionClient.patientHealthData.upsert({
         where: {
           patientId: patientInfo.id,
         },
@@ -122,7 +122,7 @@ const updateIntoDB = async (
       });
     }
     if (medicalReport) {
-      const medicaleport = await transactionClient.medicalReport.create({
+      await transactionClient.medicalReport.create({
         data: { ...medicalReport, patientId: patientInfo.id },
       });
     }
