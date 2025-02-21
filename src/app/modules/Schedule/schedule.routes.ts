@@ -5,11 +5,11 @@ import { UserRole } from "@prisma/client";
 
 const router = express.Router();
 
-// router.get(
-//     '/',
-//     auth(UserRole.DOCTOR),
-//     ScheduleController.getAllFromDB
-// );
+router.get(
+    '/',
+    auth(UserRole.DOCTOR),
+    ScheduleController.getAllFromDB
+);
 
 /**
  * API ENDPOINT: /schedule/:id

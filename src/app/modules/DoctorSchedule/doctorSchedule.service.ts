@@ -18,8 +18,6 @@ const insertIntoDB = async (
       email: user.email,
     },
   });
-  console.log("1111", user);
-  console.log("222", doctorData);
 
   const doctorScheduleData = payload.scheduleIds.map((scheduleId) => ({
     doctorId: doctorData.id,

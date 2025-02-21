@@ -10,6 +10,7 @@ import { DoctorScheduleService } from "./doctorSchedule.service";
 const insertIntoDB = catchAsync(
   async (req: Request & { user?: IAuthUser }, res: Response) => {
     const user = req.user;
+    console.log("sch control", req.body);
 
     const result = await DoctorScheduleService.insertIntoDB(user, req.body);
 
