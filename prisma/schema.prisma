@@ -61,7 +61,7 @@ model Doctor {
   user                User                @relation(fields: [email], references: [email])
  doctorSpecialties   DoctorSpecialties[]
   doctorSchedules     DoctorSchedules[]
-  //  appointment         Appointment[]
+   appointment         Appointment[]
   // prescription        Prescription[]
   // review              Review[]
 
@@ -81,7 +81,7 @@ model Patient {
 
    patientHealthData PatientHealthData?
   medicalReport     MedicalReport[]
-  // appointment       Appointment[]
+   appointment       Appointment[]
   // prescription      Prescription[]
   // review            Review[]
 
@@ -153,7 +153,7 @@ model Schedule {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   doctorSchedules DoctorSchedules[]
-  // appointment     Appointment?
+   appointment     Appointment?
 
   @@map("schedules")
 }
@@ -167,10 +167,35 @@ model DoctorSchedules {
   isBooked Boolean @default(false)
 
   appointmentId String?      @unique
-  // appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+   appointment   Appointment? @relation(fields: [appointmentId], references: [id])
 
   @@id([doctorId, scheduleId])
   @@map("doctor_schedules")
+}
+
+//appointment
+model Appointment {
+  id        String  @id @default(uuid())
+  patientId String
+   patient   Patient @relation(fields: [patientId], references: [id])
+
+   doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id])
+
+  scheduleId String   @unique
+ schedule   Schedule @relation(fields: [scheduleId], references: [id])
+
+  videoCallingId  String
+  status          AppointmentStatus @default(SCHEDULED)
+  paymentStatus   PaymentStatus     @default(UNPAID)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  doctorSchedules DoctorSchedules?
+  // payment         Payment?
+  // prescription    Prescription?
+  // review          Review?
+
+  @@map("appointments")
 }
 
 enum UserRole {
