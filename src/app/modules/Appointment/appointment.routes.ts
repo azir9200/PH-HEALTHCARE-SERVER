@@ -27,15 +27,15 @@ router.get(
 
 router.post(
   "/",
-  // auth(UserRole.PATIENT),
+  auth(UserRole.PATIENT),
   validateRequest(AppointmentValidation.createAppointment),
   AppointmentController.createAppointment
 );
 
-// router.patch(
-//     '/status/:id',
-//     auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DOCTOR),
-//     AppointmentController.changeAppointmentStatus
-// );
+router.patch(
+  "/status/:id",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DOCTOR),
+  AppointmentController.changeAppointmentStatus
+);
 
 export const AppointmentRoutes = router;

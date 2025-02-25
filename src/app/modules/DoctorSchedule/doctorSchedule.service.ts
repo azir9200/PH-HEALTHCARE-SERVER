@@ -7,29 +7,60 @@ import httpStatus from "http-status";
 import { IDoctorScheduleFilterRequest } from "./doctorSchedule.interface";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 
-const insertIntoDB = async (
-  user: any,
-  payload: {
-    scheduleIds: string[];
+const insertIntoDB = async (user: any, payload: { scheduleIds: string[] }) => {
+  try {
+    const doctorData = await prisma.doctor.findUniqueOrThrow({
+      where: { email: user.email },
+    });
+
+    if (!payload.scheduleIds.length) {
+      throw new Error("No schedule IDs provided.");
+    }
+
+    const doctorScheduleData = payload.scheduleIds.map((scheduleId) => ({
+      doctorId: doctorData.id,
+      scheduleId,
+    }));
+
+    console.log("Inserting schedules into DB...");
+
+    const result = await prisma.doctorSchedules.createMany({
+      data: doctorScheduleData,
+    });
+
+    console.log("Insertion successful:", result);
+
+    return result;
+  } catch (error) {
+    console.error("Error inserting into DB:", error);
+    throw error;
   }
-) => {
-  const doctorData = await prisma.doctor.findUniqueOrThrow({
-    where: {
-      email: user.email,
-    },
-  });
-
-  const doctorScheduleData = payload.scheduleIds.map((scheduleId) => ({
-    doctorId: doctorData.id,
-    scheduleId,
-  }));
-
-  const result = await prisma.doctorSchedules.createMany({
-    data: doctorScheduleData,
-  });
-
-  return result;
 };
+
+// const insertIntoDB = async (
+//   user: any,
+//   payload: {
+//     scheduleIds: string[];
+//   }
+// ) => {
+//   const doctorData = await prisma.doctor.findUniqueOrThrow({
+//     where: {
+//       email: user.email,
+//     },
+//   });
+
+//   const doctorScheduleData = payload.scheduleIds.map((scheduleId) => ({
+//     doctorId: doctorData.id,
+//     scheduleId,
+//   }));
+//   console.log("azirfffff",);
+//   const result = await prisma.doctorSchedules.createMany({
+//     data: doctorScheduleData,
+//   });
+//   console.log("azirfffff",);
+//   console.log("azir", result);
+//   return result;
+// };
 
 const getMySchedule = async (
   filters: any,
