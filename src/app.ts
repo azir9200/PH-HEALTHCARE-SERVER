@@ -46,6 +46,6 @@ app.use((req: Request, res: Response) => {
 });
 
 // Global error handler
-app.use(globalErrorHandler);
+// app.use(globalErrorHandler);
 
 export default app;

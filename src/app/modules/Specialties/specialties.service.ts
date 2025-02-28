@@ -4,6 +4,7 @@ import { IFile } from "../../interfaces/file";
 import { Specialties } from "@prisma/client";
 import { fileUploader } from "../../../helpers/fileUploader";
 
+
 const insertIntoDB = async (req: Request) => {
   const file = req.file as IFile;
 

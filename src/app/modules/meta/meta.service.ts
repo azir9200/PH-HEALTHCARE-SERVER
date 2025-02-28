@@ -2,6 +2,7 @@ import { PaymentStatus, UserRole } from "@prisma/client";
 import { IAuthUser } from "../../interfaces/common";
 import ApiError from "../../errors/ApiError";
 import prisma from "../../../shared/prisma";
+import { useRouteLoaderData } from "react-router-dom";
 
 const fetchDashboardMetaData = async (user: IAuthUser) => {
   let metaData;
@@ -26,7 +27,6 @@ const fetchDashboardMetaData = async (user: IAuthUser) => {
 };
 
 const getSuperAdminMetaData = async () => {
-  console.log("SuperAdmin");
   const appointmentCount = await prisma.appointment.count();
   const patientCount = await prisma.patient.count();
   const doctorCount = await prisma.doctor.count();
@@ -42,7 +42,7 @@ const getSuperAdminMetaData = async () => {
 
   const barChartData = await getBarChartData();
   const pieCharData = await getPieChartData();
-
+  const totalUserDataBar = await getBarUserData();
   return {
     appointmentCount,
     patientCount,
@@ -51,24 +51,17 @@ const getSuperAdminMetaData = async () => {
     paymentCount,
     totalRevenue,
     barChartData,
+    totalUserDataBar,
     pieCharData,
   };
 };
 
 const getAdminMetaData = async () => {
-  console.log("admin");
   const appointmentCount = await prisma.appointment.count();
   const patientCount = await prisma.patient.count();
   const doctorCount = await prisma.doctor.count();
   const paymentCount = await prisma.payment.count();
-  const reviewCount = await prisma.review.count();
-  // console.log("count", {
-  //   appointmentCount,
-  //   patientCount,
-  //   doctorCount,
-  //   paymentCount,
-  //   reviewCount,
-  // });
+
   const totalRevenue = await prisma.payment.aggregate({
     _sum: { amount: true },
     where: {
@@ -96,7 +89,6 @@ const getDoctorMetaData = async (user: IAuthUser) => {
       email: user?.email,
     },
   });
-  console.log("doctor", doctorData);
 
   const appointmentCount = await prisma.appointment.count({
     where: {
@@ -158,7 +150,7 @@ const getPatientMetaData = async (user: IAuthUser) => {
       email: user?.email,
     },
   });
-  console.log("patient", patientData);
+
   const appointmentCount = await prisma.appointment.count({
     where: {
       patientId: patientData.id,
@@ -208,22 +200,33 @@ const getBarChartData = async () => {
         GROUP BY month
         ORDER BY month ASC
     `;
-
+  console.log("getBar chart user", appointmentCountByMonth);
   return appointmentCountByMonth;
+};
+const getBarUserData = async () => {
+  const userIndividualData: { month: Date; count: bigint }[] =
+    await prisma.$queryRaw`
+        SELECT DATE_TRUNC('month', "createdAt") AS month,
+        CAST(COUNT(*) AS INTEGER) AS count
+        FROM "users"
+        GROUP BY month
+        ORDER BY month ASC
+    `;
+  console.log("getBar chart user", userIndividualData);
+  return userIndividualData;
 };
 
 const getPieChartData = async () => {
-  const appointmentStatusDistribution = await prisma.appointment.groupBy({
-    by: ["status"],
+  const appointmentStatusDistribution = await prisma.user.groupBy({
+    by: ["role"],
     _count: { id: true },
   });
 
   const formattedAppointmentStatusDistribution =
-    appointmentStatusDistribution.map(({ status, _count }) => ({
-      status,
+    appointmentStatusDistribution.map(({ role, _count }) => ({
+      role,
       count: Number(_count.id),
     }));
-
   return formattedAppointmentStatusDistribution;
 };
 

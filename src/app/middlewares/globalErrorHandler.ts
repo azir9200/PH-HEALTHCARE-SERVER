@@ -13,8 +13,14 @@ const globalErrorHandler = (
   let message = err.message || "Something went wrong!";
   let error = err;
 
+  // if (err instanceof Prisma.PrismaClientKnownRequestError) {
+  //   message = "Validation Error";
+  //   message = error.name;
+  //   error = err.message;
+  // }
   if (err instanceof Prisma.PrismaClientValidationError) {
     message = "Validation Error";
+    message = error.name;
     error = err.message;
   } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
     if (err.code === "P2002") {
