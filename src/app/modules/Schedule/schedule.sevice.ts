@@ -72,7 +72,7 @@ const insertIntoDB = async (payload: ISchedule): Promise<Schedule[]> => {
         schedules.push(result);
       }
 
-      console.log("SCHEDULE", scheduleData);
+      // console.log("SCHEDULE", scheduleData);
       startDateTime.setMinutes(startDateTime.getMinutes() + intervalTime);
     }
     currentDate.setDate(currentDate.getDate() + 1);
@@ -134,7 +134,7 @@ const getAllFromDB = async (
   const doctorScheduleIds = doctorSchedules.map(
     (schedule) => schedule.scheduleId
   );
-  console.log("object", doctorScheduleIds);
+  // console.log("object", doctorScheduleIds);
   const result = await prisma.schedule.findMany({
     where: {
       ...whereConditions,

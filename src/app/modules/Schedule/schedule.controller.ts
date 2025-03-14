@@ -28,6 +28,7 @@ const getAllFromDB = catchAsync(
       options,
       user as IAuthUser
     );
+  
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -40,26 +41,26 @@ const getAllFromDB = catchAsync(
 
 // get by id from db
 const getByIdFromDB = catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-     const result = await ScheduleService.getByIdFromDB(id);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: 'Schedule retrieval successfully',
-        data: result,
-    });
+  const { id } = req.params;
+  const result = await ScheduleService.getByIdFromDB(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Schedule retrieval successfully",
+    data: result,
+  });
 });
 
 //delete by id from db
 const deleteFromDB = catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const result = await ScheduleService.deleteFromDB(id);
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: 'Schedule deleted successfully',
-        data: result,
-    });
+  const { id } = req.params;
+  const result = await ScheduleService.deleteFromDB(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Schedule deleted successfully",
+    data: result,
+  });
 });
 
 export const ScheduleController = {
@@ -67,5 +68,4 @@ export const ScheduleController = {
   getAllFromDB,
   getByIdFromDB,
   deleteFromDB,
-  
 };

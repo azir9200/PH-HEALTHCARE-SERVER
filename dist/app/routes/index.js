@@ -7,6 +7,16 @@ const express_1 = __importDefault(require("express"));
 const user_routes_1 = require("../modules/User/user.routes");
 const admin_routes_1 = require("../modules/Admin/admin.routes");
 const auth_routes_1 = require("../modules/Auth/auth.routes");
+const specialties_routes_1 = require("../modules/Specialties/specialties.routes");
+const doctor_routes_1 = require("../modules/Doctor/doctor.routes");
+const patient_route_1 = require("../modules/Patient/patient.route");
+const schedule_routes_1 = require("../modules/Schedule/schedule.routes");
+const doctorSchedule_routes_1 = require("../modules/DoctorSchedule/doctorSchedule.routes");
+const appointment_routes_1 = require("../modules/Appointment/appointment.routes");
+const payment_routes_1 = require("../modules/Payment/payment.routes");
+const prescription_routes_1 = require("../modules/Prescription/prescription.routes");
+const meta_routes_1 = require("../modules/meta/meta.routes");
+const review_routes_1 = require("../modules/Review/review.routes");
 const router = express_1.default.Router();
 const moduleRoutes = [
     {
@@ -20,6 +30,46 @@ const moduleRoutes = [
     {
         path: "/auth",
         route: auth_routes_1.AuthRoutes,
+    },
+    {
+        path: "/specialties",
+        route: specialties_routes_1.SpecialtiesRoutes,
+    },
+    {
+        path: "/doctor",
+        route: doctor_routes_1.DoctorRoutes,
+    },
+    {
+        path: "/patient",
+        route: patient_route_1.PatientRoutes,
+    },
+    {
+        path: "/schedule",
+        route: schedule_routes_1.ScheduleRoutes,
+    },
+    {
+        path: "/doctor-schedule",
+        route: doctorSchedule_routes_1.DoctorScheduleRoutes,
+    },
+    {
+        path: "/appointment",
+        route: appointment_routes_1.AppointmentRoutes,
+    },
+    {
+        path: "/payment",
+        route: payment_routes_1.PaymentRoutes,
+    },
+    {
+        path: "/prescription",
+        route: prescription_routes_1.PrescriptionRoutes,
+    },
+    {
+        path: "/review",
+        route: review_routes_1.ReviewRoutes,
+    },
+    {
+        path: "/meta",
+        route: meta_routes_1.MetaRoutes,
     },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

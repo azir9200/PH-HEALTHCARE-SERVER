@@ -3,18 +3,28 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
 import { AuthServices } from "./auth.service";
+import config from "../../../config";
+import { ILoginUserResponse, IRefreshTokenResponse } from "./auth.interface";
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthServices.loginUser(req.body);
 
   const { refreshToken } = result;
-  res.cookie("refreshToken", refreshToken, {
-    secure: false,
+  // set refresh token into cookie
+  const cookieOptions = {
+    secure: config.env === "production",
     httpOnly: true,
-  });
+  };
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
+  res.cookie("refreshToken", refreshToken, cookieOptions);
+
+  // res.cookie("refreshToken", refreshToken, {
+  //   secure: false,
+  //   httpOnly: true,
+  // });
+
+  sendResponse<ILoginUserResponse>(res, {
+    statusCode: 200,
     success: true,
     message: "Logged in successfully!",
     data: {
@@ -25,12 +35,21 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
+  console.log("ref con", req.body);
   const { refreshToken } = req.cookies;
 
   const result = await AuthServices.refreshToken(refreshToken);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
+  // set refresh token into cookie
+  // const cookieOptions = {
+  //   secure: config.env === "production",
+  //   httpOnly: true,
+  // };
+
+ //  res.cookie("refreshToken", refreshToken, cookieOptions);
+
+  sendResponse<IRefreshTokenResponse>(res, {
+    statusCode: 200,
     success: true,
     message: "Logged in successfully!",
     data: result,

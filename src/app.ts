@@ -6,27 +6,47 @@ import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import cookieParser from "cookie-parser";
 import { AppointmentService } from "./app/modules/Appointment/appointment.service";
 import cron from "node-cron";
+import dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config();
+// Configure CORS dynamically
+const allowedOrigins = process.env.CORS_ORIGINS?.split(",") || [
+  "http://localhost:3000",
+];
 
 const app: Application = express();
-app.use(cors());
+// CORS
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://ph-healthcare-frontend-o62r.vercel.app",
+      "https://ph-healthcare-frontend-poe5ipo6g-azir-uddins-projects.vercel.app",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(cookieParser());
 
 // Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.options("*", cors());
 
-cron.schedule("* * * * *", () => {
+cron.schedule("* * * * *", async () => {
   try {
     AppointmentService.cancelUnpaidAppointments();
   } catch (err) {
-    console.error(err);
+    console.error("Error canceling unpaid appointments:", err);
   }
 });
 
 // Root route
 app.get("/", (req: Request, res: Response) => {
   res.send({
-    message: "Ph health care server..",
+    message: "Ph Health Care Server is running...",
   });
 });
 
@@ -34,9 +54,9 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/v1", router);
 
 // Handle 404 errors before the global error handler
-app.use((req: Request, res: Response) => {
-  res.status(httpStatus.NOT_FOUND).json({
-    success: false,
+app.all("*", (req: Request, res: Response, next: NextFunction) => {
+  next({
+    status: httpStatus.NOT_FOUND,
     message: "API Not Found!",
     error: {
       path: req.originalUrl,
@@ -46,6 +66,6 @@ app.use((req: Request, res: Response) => {
 });
 
 // Global error handler
-// app.use(globalErrorHandler);
+app.use(globalErrorHandler);
 
 export default app;
